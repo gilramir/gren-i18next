@@ -78,7 +78,7 @@ custom delimiters(start and end) to account for different types of placeholders.
 type Delims
     = Curly
     | Underscore
-    | Custom ( String, String )
+    | Custom { opening: String, closing: String }
 
 
 {-| An alias for replacements for use with placeholders. Each tuple should
@@ -87,7 +87,7 @@ the placeholder as the second entry. See [`tr`](I18Next#tr) and
 [`trf`](I18Next#trf) for usage examples.
 -}
 type alias Replacements =
-    List ( String, String )
+    Array { placeholder: String, replacement: String }
 
 
 {-| Use this to initialize Translations in your model. This may be needed
@@ -104,7 +104,7 @@ From this it is simple to, for example, compare two translations for keys define
 but not the other. The order of the keys is arbitrary and should not be relied
 on.
 -}
-keys : Translations -> List String
+keys : Translations -> Array String
 keys (Translations dict) =
     Dict.keys dict
 
@@ -176,9 +176,9 @@ flattenTranslationsHelp initialValue namespace dict =
                     else
                         namespace ++ "." ++ currentKey
             in
-            case val of
+            when val is
                 Leaf str ->
-                    Dict.insert (newNamespace key) str acc
+                    Dict.set (newNamespace key) str acc
 
                 Branch children ->
                     flattenTranslationsHelp acc (newNamespace key) children
@@ -204,28 +204,28 @@ t (Translations translations) key =
 replacePlaceholders : Replacements -> Delims -> String -> String
 replacePlaceholders replacements delims str =
     let
-        ( start, end ) =
+        { opening = start, closing = end } =
             delimsToTuple delims
     in
-    List.foldl
-        (\( key, value ) acc ->
+    Array.foldl
+        (\{ placeholder = key, replacement = value } acc ->
             String.replace (start ++ key ++ end) value acc
         )
         str
         replacements
 
 
-delimsToTuple : Delims -> ( String, String )
+delimsToTuple : Delims -> { opening: String, closing: String }
 delimsToTuple delims =
-    case delims of
+    when delims is
         Curly ->
-            ( "{{", "}}" )
+            { opening = "{{",  closing = "}}" }
 
         Underscore ->
-            ( "__", "__" )
+            { opening = "__", closing = "__" }
 
-        Custom tuple ->
-            tuple
+        Custom record ->
+            record
 
 
 {-| CustomReplacements if you want to replace placeholders with other things
@@ -235,7 +235,7 @@ the placeholder as the second entry. It can be anything, for example `Html`. See
 [`customTrf`](I18Next#customTrf) for usage examples.
 -}
 type alias CustomReplacements a =
-    List ( String, a )
+    Array { placeholder: String, replacement: a }
 
 
 type TranslationPiece
@@ -266,39 +266,39 @@ In most cases you'll just pass `Html.text` here.
 If you only want `String`s though, use [`tr`](I18Next#tr) instead.
 
 -}
-customTr : Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
+customTr : Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> Array a
 customTr (Translations translations) =
     customReplace (\translationKey -> Dict.get translationKey translations)
 
 
-customReplace : (String -> Maybe String) -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
+customReplace : (String -> Maybe String) -> Delims -> (String -> a) -> String -> CustomReplacements a -> Array a
 customReplace getTranslations delims lift translationKey replacements =
-    case getTranslations translationKey of
+    when getTranslations translationKey is
         Just rawString ->
             let
-                ( start, end ) =
+                { opening = start, closing = end } =
                     delimsToTuple delims
 
                 -- finds occurences for `Text "pre {{key}} suf {{other}}"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf {{other}}"]`
-                parseSinglePlaceholderKey : String -> TranslationPiece -> List TranslationPiece
+                parseSinglePlaceholderKey : String -> TranslationPiece -> Array TranslationPiece
                 parseSinglePlaceholderKey key translationElement =
-                    case translationElement of
+                    when translationElement is
                         Text rawText ->
                             rawText
                                 |> String.split (start ++ key ++ end)
-                                |> List.map Text
-                                |> List.intersperse (Placeholder key)
+                                |> Array.map Text
+                                |> Array.intersperse (Placeholder key)
 
                         Placeholder name ->
                             [ Placeholder name ]
 
                 -- for rawString "Hello {{firstName}} {{lastName}}!",
                 -- parsedTranslation is [Text "Hello ", Placeholder "fistName", Placeholder "lastName"]
-                parsedTranslation : List TranslationPiece
+                parsedTranslation : Array TranslationPiece
                 parsedTranslation =
-                    List.foldl
-                        (\( key, _ ) acc ->
-                            List.concatMap (parseSinglePlaceholderKey key) acc
+                    Array.foldl
+                        (\{ placeholder = key } acc ->
+                            Array.mapAndFlatten (parseSinglePlaceholderKey key) acc
                         )
                         [ Text rawString ]
                         replacements
@@ -306,8 +306,8 @@ customReplace getTranslations delims lift translationKey replacements =
                 -- given a list of translations, placeholderReplacers will replace all unconverted placeholders with
                 -- the custom replacements given by `replacements`
                 placeholderReplacers =
-                    List.map
-                        (\( key, value ) translationElement ->
+                    Array.map
+                        (\{ placeholder = key, replacement = value } translationElement ->
                             if Unconverted (Placeholder key) == translationElement then
                                 Converted value
 
@@ -317,11 +317,11 @@ customReplace getTranslations delims lift translationKey replacements =
                         replacements
             in
             parsedTranslation
-                |> List.map Unconverted
-                |> (\list -> List.foldr List.map list placeholderReplacers)
-                |> List.map
+                |> Array.map Unconverted
+                |> (\list -> Array.foldr Array.map list placeholderReplacers)
+                |> Array.map
                     (\value ->
-                        case value of
+                        when value is
                             Converted converted ->
                                 converted
 
@@ -340,17 +340,17 @@ customReplace getTranslations delims lift translationKey replacements =
 
 {-| Like [`customTr`](I18Next#customTr) but with support for fallback languages.
 -}
-customTrf : List Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
-customTrf translationsList =
+customTrf : Array Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> Array a
+customTrf translationsArray =
     customReplace
         (\translationsKey ->
             let
                 getByKey (Translations translations) =
                     Dict.get translationsKey translations
             in
-            translationsList
-                |> List.filterMap getByKey
-                |> List.head
+            translationsArray
+                |> Array.mapAndKeepJust getByKey
+                |> Array.first
                 |> Maybe.withDefault translationsKey
                 |> Just
         )
@@ -368,7 +368,7 @@ Use this when you need to replace placeholders.
 -}
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
-    case Dict.get key translations of
+    when Dict.get key translations is
         Just str ->
             replacePlaceholders replacements delims str
 
@@ -387,14 +387,22 @@ of languages, the function will try each language in the list.
     tf [germanTranslations, englishTranslations] "labels.greetings.hello"
 
 -}
-tf : List Translations -> String -> String
-tf translationsList key =
-    case translationsList of
-        (Translations translations) :: rest ->
-            Dict.get key translations |> Maybe.withDefault (tf rest key)
+tf : Array Translations -> String -> String
+tf translationsArray key =
+    let
+        first = Array.takeFirst 1 translationsArray
+        rest = Array.dropFirst 1 translationsArray
+    in
+        when first is
+            [ (Translations translations) ] ->
+                Dict.get key translations |> Maybe.withDefault (tf rest key)
 
-        [] ->
-            key
+            [] ->
+                key
+
+            -- Impossible, but we do this to please the compiler
+            _ ->
+                key
 
 
 {-| Combines the [`tr`](I18Next#tr) and the [`tf`](I18Next#tf) function.
@@ -404,24 +412,32 @@ at the same time.
     -- If your translations are { "greet": "Hello {{name}}" }
     import I18Next exposing (trf, Delims(..))
     let
-      langList = [germanTranslations, englishTranslations]
+      langArray = [germanTranslations, englishTranslations]
     in
-      trf langList Curly "greet" [("name", "Peter")] -- "Hello Peter"
+      trf langArray Curly "greet" [("name", "Peter")] -- "Hello Peter"
 
 -}
-trf : List Translations -> Delims -> String -> Replacements -> String
-trf translationsList delims key replacements =
-    case translationsList of
-        (Translations translations) :: rest ->
-            case Dict.get key translations of
-                Just str ->
-                    replacePlaceholders replacements delims str
+trf : Array Translations -> Delims -> String -> Replacements -> String
+trf translationsArray delims key replacements =
+    let
+        first = Array.takeFirst 1 translationsArray
+        rest = Array.dropFirst 1 translationsArray
+    in
+        when first is
+            [ (Translations translations) ] ->
+                when Dict.get key translations is
+                    Just str ->
+                        replacePlaceholders replacements delims str
 
-                Nothing ->
-                    trf rest delims key replacements
+                    Nothing ->
+                        trf rest delims key replacements
 
-        [] ->
-            key
+            [] ->
+                key
+
+            -- Impossible, but we do this to please the compiler
+            _ ->
+                key
 
 
 {-| Represents the leaf of a translations tree. It holds the actual translation
@@ -432,12 +448,21 @@ string =
     Leaf
 
 
-{-| Let's you arange your translations in a hierarchy of objects.
+{-| Let's you arrange your translations in a hierarchy of objects.
 -}
-object : List ( String, Tree ) -> Tree
+object : Array { tag: String, tree: Tree } -> Tree
 object =
-    Dict.fromList >> Branch
+    --Dict.fromArray >> Branch
+    tagTreeArrayDictFromArray >> Branch
 
+tagTreeArrayDictFromArray : Array { tag : String, tree: Tree } -> (Dict String Tree)
+tagTreeArrayDictFromArray tagTreeArray =
+    Array.foldl
+        (\{ tag = key, tree = value } acc ->
+            Dict.set key value acc
+        )
+        Dict.empty
+        tagTreeArray
 
 {-| Create a [`Translations`](I18Next#Translations) value from a list of pairs.
 
@@ -459,6 +484,7 @@ object =
     t translations "custom.morning" -- "Morning"
 
 -}
-fromTree : List ( String, Tree ) -> Translations
+fromTree : Array { tag: String, tree: Tree } -> Translations
 fromTree =
-    Dict.fromList >> flattenTranslations >> Translations
+    --Dict.fromArray >> flattenTranslations >> Translations
+    tagTreeArrayDictFromArray >> flattenTranslations >> Translations
