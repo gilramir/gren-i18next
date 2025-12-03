@@ -1,21 +1,20 @@
-# Elm i18next - Load and use JSON translations files at runtime
+# gren i18next - Load and use JSON translations files at runtime
 
-Functions for working with dynamically loaded translations in Elm.
-PRs and suggestions welcome.
+Functions for working with dynamically loaded translations in gren.
 
 ## Simple Example
 
-```elm install ChristophP/elm-i18next```
+```gren package install gilramir/gren-i18next```
 
 Then use the module in your app like this.
 
 In JS do:
 ```js
 // translations is a JSON string or JS object
-Elm.Main.init({ flags: translations });
+Gren.Main.init({ flags: translations });
 ```
 
-Then in elm, you use them in the `init` function of your app:
+Then in gren, you use them in the `init` function of your app:
 
 ```elm
 import Html exposing (Html)
@@ -64,7 +63,7 @@ view model =
         ]
 ```
 
-Check out more complete examples [here](https://github.com/ChristophP/elm-i18next/tree/master/examples)
+Check out more complete examples [here](https://github.com/gilramir/gren-i18next/tree/master/examples)
 
 ## Fetching Translations
 
@@ -82,13 +81,12 @@ Check the official
 [docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
 for usage examples.
 
-## Adding Type safety
+## History
 
-If you want to add type safety for your translations, try this awesome generator
-called [`elm-i18next-gen`](https://github.com/yonigibbs/elm-i18next-gen).
-It combines the dynamic nature of loading JSON files with the power of Elm's type system.
+This package was ported from the excellent
+[elm-i18next](https://github.com/ChristophP/elm-i18next) package for Elm.
 
-## Background
+In Cristoph's words regarding the background of that package:
 
 Dealing with Translations in Elm has always come with some hoops to jump
 through. Existing solutions include tricks like passing already translated
@@ -102,8 +100,3 @@ allows you to load JSON translation files via HTTP and then use the
 data in your Elm app. This should allow for a easier-to-use
 internationalization as existing solutions.
 
-
-## Contributing
-
-If you want to contribute, PRs are highly welcome. If you need a feature or want
-to share ideas, please open an issue or catch me in the elm slack channel.
