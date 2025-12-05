@@ -1,0 +1,20 @@
+module En exposing (en_translations)
+
+import I18Next exposing (string, object, fromTree)
+
+en_translations =
+    fromTree
+        [
+            { label = "greeting"
+            , item = object
+                [ { label = "hello", item = string "Hello" }
+                , { label = "goodbye", item = string "Goodbye" }
+                ]
+            }
+
+            ,
+            { label = "menu"
+            , item = object
+                [ { label = "language", item = string "Language" } ]
+            }
+        ]

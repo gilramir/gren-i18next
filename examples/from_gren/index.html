@@ -15,17 +15,9 @@
 var app = Gren.Main.init({
     node: document.getElementById('main'),
     flags: {
-        // These are the translations
-        translationJson: `
-     {
-       "labels": {
-         "click-me": "Click Me!"
-       },
-       "greetings": {
-         "hello": "Hello {{name}}"
-       }
-     }
-     `
+        // These are the user's preferred languages
+        // navigator.languages returns an array of BCP 47 language tags (e.g., ["en-US", "en", "es"])
+        languages: navigator.languages || [navigator.language]
     }
 });
 </script>

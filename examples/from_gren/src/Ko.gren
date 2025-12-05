@@ -1,0 +1,18 @@
+module Ko exposing (ko_translations)
+
+import I18Next exposing (string, object, fromTree)
+
+ko_translations =
+    fromTree
+        [
+            { label = "greeting"
+            , item = object
+                [ { label = "hello", item = string "안녕하세요" } ]
+            }
+
+            ,
+            { label = "menu"
+            , item = object
+                [ { label = "language", item = string "언어" } ]
+            }
+        ]

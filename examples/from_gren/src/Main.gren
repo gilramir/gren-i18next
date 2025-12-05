@@ -1,0 +1,103 @@
+module Main exposing (main)
+
+import Browser
+import Html exposing (button, label, text, select, option, div)
+import Html.Attributes exposing (selected, value, id, for)
+import Html.Events exposing (onInput)
+import I18Next exposing ( Delims(..), Translations, initialTranslations, tf)
+import Json.Decode as JD
+
+import Translations exposing (initialLang, getTranslationPack, getBestLanguage,
+    supportedLanguages, getLanguageName)
+
+type alias Model =
+    { currentLang : String
+    , tr : Array Translations
+    }
+
+initialModel : Model
+initialModel =
+    { currentLang = initialLang
+    , tr = getTranslationPack initialLang
+    }
+
+
+type Msg
+    = ChangeLanguage String
+
+type alias Flags =
+    { languages : Array String
+    }
+
+main : Program Flags Model Msg
+main =
+    Browser.document
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        }
+
+
+
+{-| Decode the translations which are passed here as flags.
+-}
+init : Flags -> { model: Model, command: Cmd Msg }
+init flags =
+    let
+        firstLang = (getBestLanguage flags.languages)
+    in
+        { model =
+            { initialModel
+                | tr = getTranslationPack firstLang
+                , currentLang = firstLang
+            }
+        , command = Cmd.none }
+
+
+update :  Msg -> Model -> { model : Model, command  : Cmd Msg }
+update msg model =
+    when msg is
+        ChangeLanguage lang ->
+            { model =
+                { model
+                    | currentLang = lang
+                    , tr = getTranslationPack lang
+                }
+            , command = Cmd.none
+            }
+
+
+{-| Use the translations in your view with or without placeholders
+-}
+view : Model -> Browser.Document Msg
+view model =
+    { title = "I18Next example"
+    , body = [
+        div [] [
+            div [] [
+                text ("Current lang: " ++ model.currentLang)
+            ],
+            div [] [
+                text "Translated: ",
+                text (tf model.tr "greeting.hello")
+            ],
+            div [] [
+                text "Only in English: ",
+                text (tf model.tr "greeting.goodbye")
+            ],
+            div [] [
+                label [for "lang-select"] [
+                    text (tf model.tr "menu.language")
+                ],
+                text " ",
+                select [id "lang-select", onInput ChangeLanguage ]
+                    (Array.map (\lang ->
+                        (option [value lang,
+                                    selected (model.currentLang == lang)]
+                            [text (getLanguageName lang)] ))
+                        supportedLanguages)
+            ]
+        ]
+    ]
+    }

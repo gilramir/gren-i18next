@@ -1,0 +1,73 @@
+module Translations exposing (initialLang, getTranslationPack, getBestLanguage,
+    supportedLanguages, getLanguageName)
+
+import I18Next exposing (Translations)
+
+import En exposing (en_translations)
+import Es exposing (es_translations)
+import De exposing (de_translations)
+import Ko exposing (ko_translations)
+import Th exposing (th_translations)
+import Zh exposing (zh_translations)
+
+initialLang : String
+initialLang = "en"
+
+supportedLanguages : Array String
+supportedLanguages =
+    [ "en", "es", "de", "ko", "th", "zh" ]
+
+getLanguageName : String -> String
+getLanguageName lang =
+    when lang is
+        "en" -> "English"
+        "es" -> "Español (Spanish)"
+        "de" -> "Deutsch (German)"
+        "ko" -> "한국어 (Korean)"
+        "th" -> "ไทย (Thai)"
+        "zh" -> "中文 (Chinese)"
+        _ -> "?"
+
+-- Returns a list of translations, with 1 chosen language, and English as a
+-- backup translation
+-- A better approach would be to honor every preferred language
+-- the user has, which also matches one of our translation languages.
+
+getTranslationPack : String -> Array Translations
+getTranslationPack lang =
+    when lang is
+        "en" -> [ en_translations ]
+        "de" -> [ de_translations, en_translations ]
+        "es" -> [ es_translations, en_translations ]
+        "ko" -> [ ko_translations, en_translations ]
+        "th" -> [ th_translations, en_translations ]
+        "zh" -> [ zh_translations, en_translations ]
+        _ -> [ en_translations ]
+
+-- Which language is best, according to the user's preferences?
+getBestLanguage : (Array String) -> String
+getBestLanguage preferredLanguages =
+    let
+        maybeLang = findPreferredLanguage preferredLanguages
+    in
+        when maybeLang is
+            Just lang -> lang
+            Nothing -> initialLang
+
+-- Given the list of preferred language strings, trim them so
+-- we only have the first 2 characters from the string, and then
+-- from that, find the first language that matches on in our
+-- supported language list
+-- A better approach would be to honor every preferred language
+-- the user has, which also matches one of our translation languages.
+findPreferredLanguage : Array String -> Maybe String
+findPreferredLanguage preferredLanguages =
+    preferredLanguages
+        -- 1. Convert to 2 chars only
+        |> Array.map (\lang -> String.takeFirst 2 lang)
+
+        -- 2. Filter the list to include only our languages
+        |> Array.keepIf (\lang -> Array.member lang supportedLanguages)
+
+        -- 3. Take the first element of the resulting list
+        |> Array.first

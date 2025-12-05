@@ -470,14 +470,14 @@ labelItemArrayDictFromArray labelItemArray =
 
     translations =
         fromTree
-          [ ("custom"
-            , object
-                [ ( "morning", string "Morning" )
-                , ( "evening", string "Evening" )
-                , ( "afternoon", string "Afternoon" )
+          [ { label = "custom"
+            , item = object
+                [ { label = "morning", item = string "Morning" }
+                , { label = "evening", item = string "Evening" }
+                , { label = "afternoon", item = string "Afternoon" }
                 ]
             )
-          , ("hello", string "hello")
+          , { label = "hello", item = string "hello"}
           ]
 
     -- use it like this
