@@ -1,6 +1,6 @@
 # gren i18next - Load and use JSON translations files at runtime
 
-Functions for working with dynamically loaded translations in gren.
+Functions for working with dynamically loaded translations in Gren.
 
 ## Simple Example
 
@@ -34,11 +34,11 @@ type alias Model = {
 
 type Msg = ..
 
-init : Json.Encode.Value -> (Model, Cmd msg)
+init : Json.Encode.Value -> { model: Model, command: Cmd msg}
 init flags =
     case Json.Decode.decodeValue translationsDecoder flags of
         Ok translations ->
-            ( Model translations, Cmd.none )
+            { model = Model translations, command = Cmd.none }
 
         Err err ->
             -- handle the error
@@ -67,8 +67,14 @@ Check out more complete examples [here](https://github.com/gilramir/gren-i18next
 
 ## Fetching Translations
 
-If you can't pass the translations as flags but want to fetch them from Elm code
+If you can't pass the translations as flags but want to fetch them from Gren code
 instead do the same as in the simple example but apply the decoder to the Http call.
+
+## Embedded Translation
+
+Or, if your application has a small set of translations and you don't mind
+every user having every translation loaded into their browser, you can generate
+the translations directly in Gren code.
 
 ## Advanced Stuff: Placeholders and fallback languages
 
@@ -84,7 +90,8 @@ for usage examples.
 ## History
 
 This package was ported from the excellent
-[elm-i18next](https://github.com/ChristophP/elm-i18next) package for Elm.
+[elm-i18next](https://github.com/ChristophP/elm-i18next) package for Elm,
+written by Christoph Pölt.
 
 In Cristoph's words regarding the background of that package:
 
