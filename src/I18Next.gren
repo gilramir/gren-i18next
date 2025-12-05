@@ -119,7 +119,7 @@ hasKey (Translations dict) key =
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
 leaf values can only be strings. Use this decoder directly, if you are passing
-the translations JSON into your elm app via flags or ports.
+the translations JSON into your Gren app via flags or ports.
 After decoding nested values will be available with any of the translate
 functions separated with dots.
 
@@ -255,13 +255,15 @@ _Hint:_ The third argument is a function which will be called for any string pie
 AREN'T placeholders, so that the types of replacements and the other other string parts match.
 In most cases you'll just pass `Html.text` here.
 
-    {- If your translations are { "call-to-action": "Go to {{elm-website}} for more information." }
+    {- If your translations are { "call-to-action": "Go to {{gren-website}} for more information." }
     ...
     -}
     import Html exposing (text, a)
 
-    customTr translationsEn Curly text "call-to-action" [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
-    -- Go to <a href="https://elm-lang.org">https://elm-lang.org</a> for more information.
+    customTr translationsEn Curly text "call-to-action"
+        [ { placeholder = "gren-website", replacement = a
+            [href "https://gren-lang.org"] [text "https://gren-lang.org"] } ]
+    -- Go to <a href="https://gren-lang.org">https://gren-lang.org</a> for more information.
 
 If you only want `String`s though, use [`tr`](I18Next#tr) instead.
 
@@ -363,7 +365,7 @@ Use this when you need to replace placeholders.
 
     -- If your translations are { "greet": "Hello {{name}}" }
     import I18Next exposing (tr, Delims(..))
-    tr translations Curly "greet" [("name", "Peter")]
+    tr translations Curly "greet" [{ placeholder = "name", replacement = "Peter"}]
 
 -}
 tr : Translations -> Delims -> String -> Replacements -> String
@@ -380,7 +382,7 @@ tr (Translations translations) delims key replacements =
 of Translations. If the key you provide does not exist in the first of the list
 of languages, the function will try each language in the list.
 
-    {- Will use german if the key exists there, or fall back to english
+    {- Will use German if the key exists there, or fall back to english
     if not. If the key is not in any of the provided languages the function
     will return the key. -}
     import I18Next exposing (tf)
@@ -397,10 +399,6 @@ tf translationsArray key =
             [ (Translations translations) ] ->
                 Dict.get key translations |> Maybe.withDefault (tf rest key)
 
-            [] ->
-                key
-
-            -- Impossible, but we do this to please the compiler
             _ ->
                 key
 
@@ -414,7 +412,8 @@ at the same time.
     let
       langArray = [germanTranslations, englishTranslations]
     in
-      trf langArray Curly "greet" [("name", "Peter")] -- "Hello Peter"
+      trf langArray Curly "greet"
+        [{ placeholder = "name", replacement = "Peter")] -- "Hello Peter"
 
 -}
 trf : Array Translations -> Delims -> String -> Replacements -> String

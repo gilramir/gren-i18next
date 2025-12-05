@@ -1,4 +1,4 @@
-# gren i18next - Load and use JSON translations files at runtime
+# gren i18next - Load and use translations at runtime
 
 Functions for working with dynamically loaded translations in Gren.
 
@@ -74,7 +74,18 @@ instead do the same as in the simple example but apply the decoder to the Http c
 
 Or, if your application has a small set of translations and you don't mind
 every user having every translation loaded into their browser, you can generate
-the translations directly in Gren code.
+the translations directly in Gren code. For example:
+
+```elm
+ko_translations =
+    fromTree
+        [
+            { label = "greeting"
+            , item = object
+                [ { label = "hello", item = string "안녕하세요" } ]
+            }
+        ]
+```
 
 ## Advanced Stuff: Placeholders and fallback languages
 
@@ -84,7 +95,7 @@ Here are some supported features for advanced use cases:
 - Fallback languages
 
 Check the official
-[docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
+[docs](https://packages.gren-lang.org/package/gilramir/gren-i18next/version/latest/module/I18Next)
 for usage examples.
 
 ## History
