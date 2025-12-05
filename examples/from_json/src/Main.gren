@@ -1,0 +1,83 @@
+module Main exposing (main)
+
+import Browser
+import Html exposing (button, label, text)
+import I18Next
+    exposing
+        ( Delims(..)
+        , Translations
+        , initialTranslations
+        , t
+        , tr
+        , translationsDecoder
+        )
+import Json.Decode as JD
+
+
+type alias Model =
+    { translations : Translations
+    , error : Maybe String
+    }
+
+initialModel : Model
+initialModel =
+    { translations = initialTranslations
+    , error = Nothing
+    }
+
+
+type Msg
+    = NoOp
+
+type alias Flags =
+    { translationJson : String
+    }
+
+main : Program Flags Model Msg
+main =
+    Browser.document
+        { init = init
+        , update = \msg model -> { model = model, command = Cmd.none }
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        }
+
+
+
+{-| Decode the translations which are passed here as flags.
+-}
+init : Flags -> { model: Model, command: Cmd Msg }
+init flags =
+    when JD.decodeString translationsDecoder flags.translationJson is
+        Ok translations ->
+            { model =
+                { initialModel |
+                    translations = translations
+                }
+            , command = Cmd.none }
+
+        Err err ->
+            { model =
+                { initialModel |
+                    error = Just ("OMG couldn't load Translations: " ++ JD.errorToString err)
+                }
+            , command = Cmd.none
+            }
+
+
+{-| Use the translations in your view with or without placeholders
+-}
+view : Model -> Browser.Document Msg
+view model =
+    { title = "I18Next example"
+    , body =
+        [ label []
+            -- Use regular translations
+            [ text (t model.translations "labels.click-me")
+
+            -- Use translations with placeholders
+            , button [] [ text (tr model.translations Curly "greetings.hello"
+                [ { placeholder = "name", replacement = "Peter" } ]) ]
+            ]
+        ]
+    }

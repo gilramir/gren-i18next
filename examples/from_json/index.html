@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Example</title>
+</head>
+
+<body>
+
+<div id="main"></div>
+
+<script src="main.js"></script>
+<script>
+const baseUrl = new URL(document.baseURI);
+var app = Gren.Main.init({
+    node: document.getElementById('main'),
+    flags: {
+        // These are the translations
+        translationJson: `
+     {
+       "labels": {
+         "click-me": "Click Me!"
+       },
+       "greetings": {
+         "hello": "Hello {{name}}"
+       }
+     }
+     `
+    }
+});
+</script>
+
+
+</body>
+</html>
