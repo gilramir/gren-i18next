@@ -450,19 +450,19 @@ string =
 
 {-| Let's you arrange your translations in a hierarchy of objects.
 -}
-object : Array { tag: String, tree: Tree } -> Tree
+object : Array { label: String, item: Tree } -> Tree
 object =
     --Dict.fromArray >> Branch
-    tagTreeArrayDictFromArray >> Branch
+    labelItemArrayDictFromArray >> Branch
 
-tagTreeArrayDictFromArray : Array { tag : String, tree: Tree } -> (Dict String Tree)
-tagTreeArrayDictFromArray tagTreeArray =
+labelItemArrayDictFromArray : Array { label: String, item: Tree } -> (Dict String Tree)
+labelItemArrayDictFromArray labelItemArray =
     Array.foldl
-        (\{ tag = key, tree = value } acc ->
+        (\{ label = key, item = value } acc ->
             Dict.set key value acc
         )
         Dict.empty
-        tagTreeArray
+        labelItemArray
 
 {-| Create a [`Translations`](I18Next#Translations) value from a list of pairs.
 
@@ -484,7 +484,7 @@ tagTreeArrayDictFromArray tagTreeArray =
     t translations "custom.morning" -- "Morning"
 
 -}
-fromTree : Array { tag: String, tree: Tree } -> Translations
+fromTree : Array { label: String, item: Tree } -> Translations
 fromTree =
     --Dict.fromArray >> flattenTranslations >> Translations
-    tagTreeArrayDictFromArray >> flattenTranslations >> Translations
+    labelItemArrayDictFromArray >> flattenTranslations >> Translations

@@ -180,7 +180,7 @@ translateWithCustomizedReturnType =
                 let
                     malformedTranslations =
                         I18Next.fromTree
-                        [ { tag = "test", tree = I18Next.string "pre __weird __stuff__ __ suff" } ]
+                        [ { label = "test", item = I18Next.string "pre __weird __stuff__ __ suff" } ]
                 in
                 customTr malformedTranslations Underscore Text "test"
                 [ { placeholder = "stuff", replacement = Link "Max" } ]
@@ -189,7 +189,7 @@ translateWithCustomizedReturnType =
             \_ ->
                 let
                     malformedTranslations =
-                        I18Next.fromTree [ { tag = "test", tree = I18Next.string "pre __weird __stuff__ __ suff" } ]
+                        I18Next.fromTree [ { label = "test", item = I18Next.string "pre __weird __stuff__ __ suff" } ]
                 in
                 customTr malformedTranslations Underscore Text "test"
                 [ { placeholder = "weird __stuff__ ", replacement = Link "Max" } ]
@@ -198,7 +198,7 @@ translateWithCustomizedReturnType =
             \_ ->
                 let
                     malformedTranslations =
-                        I18Next.fromTree [ { tag = "test", tree = I18Next.string "pre __placeholder__ suff" } ]
+                        I18Next.fromTree [ { label = "test", item = I18Next.string "pre __placeholder__ suff" } ]
                 in
                 customTr malformedTranslations Underscore Text "test"
                 [ { placeholder = "__placeholder__", replacement = Text "__placeholder__" } ]
@@ -218,7 +218,7 @@ translateWithCustomizedReturnType =
             \_ ->
                 let
                     multipleOccurences =
-                        I18Next.fromTree [ { tag = "test", tree = I18Next.string "pre __placeholder1__ a __placeholder2__ b __placeholder1__ c __placeholder2__ suff" } ]
+                        I18Next.fromTree [ { label = "test", item = I18Next.string "pre __placeholder1__ a __placeholder2__ b __placeholder1__ c __placeholder2__ suff" } ]
                 in
                 customTr multipleOccurences Underscore Text "test"
                 [ { placeholder = "placeholder1", replacement = Link "Max" }
@@ -351,7 +351,7 @@ customTranslations =
             \str ->
                 let
                     translations =
-                        I18Next.fromTree [ { tag = "test", tree = I18Next.string str } ]
+                        I18Next.fromTree [ { label = "test", item = I18Next.string str } ]
                 in
                 t translations "test" |> Expect.equal str
         , fuzz Fuzz.string "can build working translations with an object" <|
@@ -359,9 +359,9 @@ customTranslations =
                 let
                     translations =
                         I18Next.fromTree
-                            [ { tag = "obj"
-                              , tree = I18Next.object
-                                    [ { tag = "test", tree = I18Next.string str } ]
+                            [ { label = "obj"
+                              , item = I18Next.object
+                                    [ { label = "test", item = I18Next.string str } ]
                               }
                             ]
                 in
